@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACADEMY 11</title>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #0b1020;
+    color: white;
+    font-family: Tahoma, sans-serif;
+}
+
+header {
+    background: #151e35;
+    padding: 22px;
+    text-align: center;
+    border-bottom: 2px solid #6655ff;
+}
+
+header h1 {
+    color: #8d83ff;
+    margin: 5px;
+    font-size: 30px;
+}
+
+header p {
+    color: #aab3ca;
+}
+
+.container {
+    max-width: 650px;
+    margin: 25px auto;
+    padding: 15px;
+}
+
+.card {
+    background: #17213a;
+    padding: 22px;
+    border-radius: 18px;
+    margin-bottom: 18px;
+    border: 1px solid #293654;
+}
+
+h2 {
+    color: #a69cff;
+    font-size: 20px;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #435174;
+    background: #0e162b;
+    color: white;
+    margin: 10px 0;
+    font-size: 15px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 10px;
+    background: #6655ff;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #8275ff;
+}
+
+.option {
+    background: #263451;
+    text-align: right;
+    margin: 10px 0;
+}
+
+.option.correct {
+    background: #16834e;
+}
+
+.option.wrong {
+    background: #a72c42;
+}
+
+.hidden {
+    display: none;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    color: #c2c9dc;
+}
+
+.stats strong {
+    display: block;
+    color: #9b91ff;
+    font-size: 23px;
+}
+
+#message {
+    color: #ffc86b;
+    text-align: center;
+    margin-top: 15px;
+}
+
+footer {
+    text-align: center;
+    color: #65718d;
+    padding: 25px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>ACADEMY 11</h1>
+    <p>آکادمی هوشمند رشته علوم انسانی</p>
+</header>
+
+<div class="container">
+
+<div class="card" id="home">
+
+    <h2>🎓 خوش آمدید</h2>
+
+    <input id="username"
+    placeholder="نام بازیکن را وارد کنید">
+
+    <h2>📚 انتخاب کتاب</h2>
+
+    <select id="book">
+        <option value="جامعه شناسی ۲">جامعه شناسی ۲</option>
+        <option value="فلسفه ۱">فلسفه ۱</option>
+        <option value="روانشناسی">روانشناسی</option>
+        <option value="علوم و فنون ادبی ۲">علوم و فنون ادبی ۲</option>
+        <option value="تاریخ ۲">تاریخ ۲</option>
+        <option value="جغرافیا ۲">جغرافیا ۲</option>
+        <option value="ریاضی و آمار ۲">ریاضی و آمار ۲</option>
+        <option value="عربی ۲">عربی ۲</option>
+        <option value="دین و زندگی ۲">دین و زندگی ۲</option>
+        <option value="فارسی ۲">فارسی ۲</option>
+        <option value="زبان انگلیسی ۲">زبان انگلیسی ۲</option>
+    </select>
+
+    <h2>🎮 انتخاب حالت بازی</h2>
+
+    <select id="mode">
+        <option value="normal">تمرین آزاد</option>
+        <option value="challenge">چالش سرعتی</option>
+    </select>
+
+    <button onclick="startGame()">شروع بازی 🚀</button>
+
+    <p id="message"></p>
+
+</div>
+
+<div class="card hidden" id="game">
+
+    <div class="stats">
+
+        <div>
+            <strong id="score">0</strong>
+            امتیاز
+        </div>
+
+        <div>
+            <strong id="number">1</strong>
+            سؤال
+        </div>
+
+        <div>
+            <strong id="timer">30</strong>
+            زمان
+        </div>
+
+    </div>
+
+    <hr>
+
+    <h2 id="question">سؤال</h2>
+
+    <div id="answers"></div>
+
+    <p id="feedback"></p>
+
+</div>
+
+<div class="card hidden" id="result">
+
+    <h2>🏆 نتیجه مسابقه</h2>
+
+    <h1 id="finalScore"></h1>
+
+    <p id="resultText"></p>
+
+    <button onclick="location.reload()">
+        بازگشت به صفحه اصلی
+    </button>
+
+</div>
+
+<div class="card">
+
+    <h2>🌐 وضعیت سرور</h2>
+
+    <p id="serverStatus">در حال بررسی...</p>
+
+    <input id="room"
+    placeholder="کد اتاق دوستان">
+
+    <button onclick="joinRoom()">
+        ورود به اتاق دوستان
+    </button>
+
+    <p id="roomStatus"></p>
+
+</div>
+
+</div>
+
+<footer>
+    ACADEMY 11 | ساخته شده برای دانش آموزان انسانی
+</footer>
+
+<script>
+
+const socket = io();
+
+let questions = [
+{
+book:"جامعه شناسی ۲",
+q:"جهان فرهنگی به چه معناست؟",
+a:["جهان طبیعت","جهان معناها و ارزش‌های انسانی","جهان حیوانات","جهان فیزیکی"],
+c:1
+},
+{
+book:"جامعه شناسی ۲",
+q:"کدام مورد از عناصر فرهنگ است؟",
+a:["هنجارها","سنگ‌ها","کوه‌ها","دریاها"],
+c:0
+},
+{
+book:"فلسفه ۱",
+q:"فلسفه بیشتر به بررسی چه چیزی می‌پردازد؟",
+a:["مسائل بنیادی هستی و شناخت","ورزش","کشاورزی","آب‌وهوا"],
+c:0
+},
+{
+book:"روانشناسی",
+q:"روانشناسی علم مطالعه چیست؟",
+a:["ستارگان","رفتار و فرایندهای ذهنی","تاریخ","جغرافیا"],
+c:1
+},
+{
+book:"تاریخ ۲",
+q:"تاریخ به بررسی چه موضوعی می‌پردازد؟",
+a:["رویدادهای گذشته انسان","آب‌وهوا","گیاهان","اعداد"],
+c:0
+},
+{
+book:"جغرافیا ۲",
+q:"جغرافیا چه چیزی را بررسی می‌کند؟",
+a:["فضا و محیط جغرافیایی","فقط ادبیات","فقط ریاضی","فقط موسیقی"],
+c:0
+},
+{
+book:"ریاضی و آمار ۲",
+q:"میانگین اعداد ۲ و ۴ و ۶ چند است؟",
+a:["۳","۴","۵","۶"],
+c:1
+},
+{
+book:"علوم و فنون ادبی ۲",
+q:"تشبیه در ادبیات چه کاربردی دارد؟",
+a:["مقایسه دو چیز","جمع اعداد","اندازه‌گیری","ترجمه"],
+c:0
+},
+{
+book:"دین و زندگی ۲",
+q:"هدف اصلی بعثت پیامبران چیست؟",
+a:["هدایت انسان‌ها","افزایش ثروت","ساخت شهرها","تجارت"],
+c:0
+}
+];
+
+let currentQuestions = [];
+let index = 0;
+let score = 0;
+let time = 30;
+let timerInterval;
+let answered = false;
+
+function startGame(){
+
+    const name = document.getElementById("username").value.trim();
+    const book = document.getElementById("book").value;
+
+    if(!name){
+        alert("نام خود را وارد کنید");
+        return;
+    }
+
+    currentQuestions = questions.filter(q=>q.book===book);
+
+    if(currentQuestions.length===0){
+        alert("سؤال این کتاب هنوز به بانک اضافه نشده است");
+        return;
+    }
+
+    index=0;
+    score=0;
+
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+
+    showQuestion();
+
+}
+
+function showQuestion(){
+
+    if(index>=currentQuestions.length){
+        endGame();
+        return;
+    }
+
+    answered=false;
+    time=30;
+
+    const q=currentQuestions[index];
+
+    document.getElementById("question").textContent=q.q;
+    document.getElementById("score").textContent=score;
+    document.getElementById("number").textContent=index+1;
+    document.getElementById("timer").textContent=time;
+    document.getElementById("feedback").textContent="";
+
+    const answers=document.getElementById("answers");
+    answers.innerHTML="";
+
+    q.a.forEach((answer,i)=>{
+
+        const btn=document.createElement("button");
+
+        btn.textContent=answer;
+        btn.className="option";
+
+        btn.onclick=()=>checkAnswer(i,btn);
+
+        answers.appendChild(btn);
+
+    });
+
+    clearInterval(timerInterval);
+
+    if(document.getElementById("mode").value==="challenge"){
+        timerInterval=setInterval(()=>{
+            time--;
+            document.getElementById("timer").textContent=time;
+
+            if(time<=0){
+                clearInterval(timerInterval);
+                if(!answered){
+                    answered=true;
+                    document.getElementById("feedback").textContent="زمان تمام شد!";
+                    setTimeout(nextQuestion,1000);
+                }
+            }
+
+        },1000);
+    }
+
+}
+
+function checkAnswer(choice,btn){
+
+    if(answered)return;
+
+    answered=true;
+    clearInterval(timerInterval);
+
+    const q=currentQuestions[index];
+
+    if(choice===q.c){
+
+        score+=10;
+        btn.classList.add("correct");
+
+        document.getElementById("feedback").textContent=
+        "آفرین! پاسخ درست بود 🎉";
+
+    }else{
+
+        btn.classList.add("wrong");
+
+        document.getElementById("feedback").textContent=
+        "پاسخ درست: "+q.a[q.c];
+
+        document.querySelectorAll(".option")[q.c]
+        .classList.add("correct");
+
+    }
+
+    document.getElementById("score").textContent=score;
+
+    setTimeout(nextQuestion,1300);
+
+}
+
+function nextQuestion(){
+
+    index++;
+    showQuestion();
+
+}
+
+function endGame(){
+
+    clearInterval(timerInterval);
+
+    document.getElementById("game").classList.add("hidden");
+    document.getElementById("result").classList.remove("hidden");
+
+    document.getElementById("finalScore").textContent=
+    score+" امتیاز";
+
+    document.getElementById("resultText").textContent=
+    "تعداد پاسخ‌های صحیح: "+(score/10);
+
+}
+
+socket.on("game-status",(online)=>{
+
+    document.getElementById("serverStatus").textContent=
+    online ? "🟢 بازی فعال است" : "🔴 بازی غیرفعال است";
+
+});
+
+socket.on("error-message",(msg)=>{
+    alert(msg);
+});
+
+function joinRoom(){
+
+    const room=document.getElementById("room").value.trim();
+
+    if(!room){
+        alert("کد اتاق را وارد کنید");
+        return;
+    }
+
+    socket.emit("join-room",room);
+
+    document.getElementById("roomStatus").textContent=
+    "درخواست ورود به اتاق ارسال شد";
+
+}
+
+socket.on("room-update",(data)=>{
+
+    document.getElementById("roomStatus").textContent=
+    "تعداد بازیکنان اتاق: "+data.players;
+
+});
+
+</script>
+
+</body>
+</html>
